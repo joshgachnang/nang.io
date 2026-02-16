@@ -6,6 +6,12 @@ on:
       - master
   pull_request:
 
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+  statuses: write
+
 jobs:
   build-and-deploy:
     name: Build and Deploy
