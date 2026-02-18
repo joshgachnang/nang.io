@@ -2,42 +2,56 @@
 layout: ../../layouts/BlogPost.astro
 title: Fabric XMPP Chat
 date: 2013-08-09
-excerpt: Integrating XMPP chat messaging into Fabric deployment scripts.
 ---
 
-This article demonstrates how to integrate XMPP chat messaging into Fabric deployment scripts for real-time notifications. I created a system to send deployment status updates through an XMPP server (ejabberd).
+In an effort to streamline my own deployment system, I decided to make Fabric (and soon, the rest of my infrastructure) send me chat messages when things happen. This is a very simple version of the system to get you started. Basically, you have it connect to an XMPP server (I'm using ejabberd on Ubuntu 12.04), and then send you messages on certain events. This one will shoot out a message when you start the deployment, and when it completes. Handy additions would be an error handler of some sort, which relays those messages to you. This system will be very useful with a continuous integration server (which I'm working on right now), so it can tell you what its progress is, and you can send it queries and commands via a simple chat interface. This whole thing was inspired by Github's HUBOT.
 
-## Installation
+Make sure you have Fabric and the xmpp library installed (preferably in your virtualenv):
 
-The solution requires two packages:
-
-```bash
+```
 pip install fabric xmpppy
 ```
 
-## Core Functions
+Now we will add a few handy functions to our fabfile.py:
 
-Two main functions were added to `fabfile.py`:
+```python
+env.xmpp_auth = {}
+env.xmpp_client = None
 
-- `configure_xmpp()` - Reads credentials from a configuration file and stores them in environment variables
-- `send_xmpp_message()` - Establishes an XMPP client connection and transmits messages
+def configure_xmpp(config_file='/etc/xmpp_credentials.ini', section=None):
+    config = ConfigParser.ConfigParser()
+    config.read(config_file)
+    if section is None:
+        section = env.project
+    if not config.has_section(section):
+        print "Could not find section {0} in config file: {1}".format(section, config_file)
+        return
 
-## Configuration File
+    env.xmpp_auth['username'] = config.get(section, 'username')
+    env.xmpp_auth['password'] = config.get(section, 'password')
+    env.xmpp_auth['hostname'] = config.get(section, 'hostname')
+    env.xmpp_auth['to'] = config.get(section, 'to')
+    print env.xmpp_auth
 
-The credentials file (defaulting to `/etc/xmpp_credentials.ini`) should contain username, password, hostname, and recipient details organized by project section.
-
-```ini
-[myproject]
-username = deploy@example.com
-password = secret
-hostname = jabber.example.com
-recipient = team@conference.example.com
+def send_xmpp_message(msg):
+    if env.xmpp_client is None:
+        env.xmpp_client = xmpp.Client(env.xmpp_auth['hostname'], debug=[])
+        env.xmpp_client.connect()
+        env.xmpp_client.auth(env.xmpp_auth['username'], env.xmpp_auth['password'])
+        env.xmpp_client.sendInitPresence()
+    message = xmpp.Message(env.xmpp_auth['to'], msg)
+    message.setAttr('type', 'chat')
+    env.xmpp_client.send(message)
 ```
 
-## Code Structure
+Before you do anything, you should call configure_xmpp(). This will save the credentials from you credentials file in your env variable for use in send_xmpp_message(). Then, each time you want to send a message to yourself, call send_xmpp_message, and bam! You get it.
 
-The implementation stores authentication details in `env.xmpp_auth` and maintains a persistent client connection in `env.xmpp_client`. Messages are created using the xmpppy library's Message class with chat-type attributes.
+Finally, we need to create a credentials file. This should not be stored with your code (so it doesn't wind up in version control). The code above defaults to /etc/xmpp_credentials.ini.
 
-## Practical Applications
-
-This system pairs well with continuous integration servers, enabling deployment progress notifications and bidirectional communication through chat interfaces—inspired by GitHub's HUBOT project.
+```ini
+[scouter]
+username=scouter
+password=SECURE_PASSWORD
+hostname=servercobra.com
+to=josh@servercobra.com
+```

@@ -1,7 +1,6 @@
 ---
-layout: ../layouts/BlogPost.astro
+layout: ../layouts/PageLayout.astro
 title: Roman Eulogy
-date: 2024-01-01
 ---
 
 I adopted Roman from a San Francisco rescue adoption event. Originally planning to adopt a different dog, I fell in love with Roman sitting on his foster mother's lap. Roman arrived underweight with matted fur, suggesting prior abuse. He underwent multiple eye surgeries for cherry eye conditions within his first months.
