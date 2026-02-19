@@ -76,7 +76,9 @@ header nav {
 
 .nav-links a {
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .nav-links a:hover {

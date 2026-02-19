@@ -3,6 +3,8 @@ layout: ../layouts/PageLayout.astro
 title: About
 ---
 
+![Josh Gachnang](/profile.jpg)
+
 Josh Gachnang is a software developer based in Madison, WI, currently serving as CTO of Flourish Health. He has been working in software development since 2010, initially while studying Computer Science at the University of Wisconsin-Madison.
 
 Throughout his career, Gachnang has worked across diverse environments including startups, large corporations, and universities. His technical portfolio spans mobile applications, web platforms, cloud infrastructure, and various other domains. He demonstrates a strong commitment to continuous learning and technology exploration.
